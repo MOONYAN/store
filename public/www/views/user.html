@@ -1,0 +1,26 @@
+﻿<ion-view title="帳號設定：LINE@iStore">
+    <ion-content scroll="false">
+        <div class="list">
+            <label class="item item-input">
+                    <span class="input-label">帳號：</span>
+                    <input type="text" ng-model="userCtrl.user.username" placeholder="帳號">
+            </label>
+            <label class="item item-input">
+                    <span class="input-label">密碼：</span>
+                    <input type="password" ng-model="userCtrl.user.password" placeholder="密碼">
+            </label>
+        </div>
+        <div class="row">
+            <div class="col">
+                <button class="button button-block button-dark" ng-click="userCtrl.login()">
+                        登入 iStore
+                </button>
+            </div>
+            <div class="col">
+                <button class="button button-block button-dark" ng-click="userCtrl.register()">
+                        註冊 iStore
+                </button>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

@@ -1,0 +1,26 @@
+.message {
+    height: 40px;
+}
+
+.colored.col-50 {
+    border: 1px solid white;
+}
+
+.row:nth-child(odd) .colored.col-50{
+    background-color: #FFFFFF;
+    text-align: center;
+}
+
+.row:nth-child(even) .colored.col-50 {
+    background-color: #F0F0F0;
+    text-align: center;
+}
+
+.row.header .colored.col-50 {
+    background-color: #BEBEBE;
+    text-align: center;
+}
+
+.table {
+    box-shadow:4px 4px 3px rgba(20%,20%,40%,0.5);
+}
