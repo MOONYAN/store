@@ -3,7 +3,7 @@ var { storeId, storeSecret, storeTopic } = require('../config/storeConfig').stor
     express = require('express'),
     router = express.Router(),
     async = require('async'),
-    axios = require('axios'),
+    User = require('../models/userModel'),
     Account = require('../models/accountModel'),
     Message = require('../models/messageModel'),
     Transaction = require('../models/transactionModel'),
@@ -11,6 +11,9 @@ var { storeId, storeSecret, storeTopic } = require('../config/storeConfig').stor
 
 var jwt = require('jsonwebtoken'),
     user = require('../helpers/accessControl');
+
+var FCM = require('fcm-push'),
+    fcm = new FCM(fcmServerKey);
 
 router.post('/login', user.can('loginAccount'), function (req, res) {
     async.waterfall([function (next) {
@@ -23,7 +26,7 @@ router.post('/login', user.can('loginAccount'), function (req, res) {
     }, function (account, next) {
         account.lineId = req.body.lineId || account.lineId;
         account.save(function (err) {
-            if(err) {
+            if (err) {
                 return res.json({ error: 'line註冊錯誤' });
             }
             else {
@@ -31,10 +34,10 @@ router.post('/login', user.can('loginAccount'), function (req, res) {
             }
         });
     }, function (account, next) {
-        Account.update({ lineId:account.lineId, _id:{ $ne:account._id}}, {$set:{lineId:null}}, function(err){
-            if(err){
+        Account.update({ lineId: account.lineId, _id: { $ne: account._id } }, { $set: { lineId: null } }, function (err) {
+            if (err) {
                 return res.json({ error: 'lineId轉移錯誤' });
-            }else{
+            } else {
                 var roleToken = jwt.sign({ role: account.role || 'customer' }, storeSecret, { expiresIn: '30m' });
                 res.header('Authorization', `Bearer ${roleToken}`);
                 return res.json({ account: account });
@@ -58,25 +61,22 @@ router.post('/', user.can('openAccount'), function (req, res) {
                 next(null, account);
         });
     }, function (account, next) {
-        Account.update({ lineId:account.lineId, _id:{ $ne:account._id}}, {$set:{lineId:null}}, function(err){
-            if(err){
+        Account.update({ lineId: account.lineId, _id: { $ne: account._id } }, { $set: { lineId: null } }, function (err) {
+            if (err) {
                 return res.json({ error: 'lineId轉移錯誤' });
-            }else{
+            } else {
                 next(null, account);
             }
         });
     }, function (account) {
-        axios({
-            method: 'post',
-            url: `https://ilab.csie.io/apps09/istore/user/account`,
-            headers: { Authorization: istoreJwt },
-            data: { userId: req.body.userId, accountId: account._id, storeId: storeId }
-        }).then(function () {
-            var roleToken = jwt.sign({ role: account.role }, storeSecret, { expiresIn: '300Y' });
-            res.header('Authorization', `Bearer ${roleToken}`);
-            res.json({ account: account });
-        }).catch(function () {
-            return res.json({ error: '帳號設定錯誤' });
+        User.findByIdAndUpdate(req.body.userId, { $addToSet: { accounts: { storeId: req.body.storeId, accountId: account._id } } }, function (err, user) {
+            if (err)
+                return res.json({ error: '帳號設定錯誤' });
+            else {
+                var roleToken = jwt.sign({ role: account.role }, storeSecret, { expiresIn: '30m' });
+                res.header('Authorization', `Bearer ${roleToken}`);
+                res.json({ account: account });
+            }
         });
     }]);
 });
@@ -95,7 +95,7 @@ router.put('/role', user.can('roleChange'), function (req, res) {
 
 router.put('/deposit', user.can('deposit'), function (req, res) {
     async.waterfall([function (next) {
-        var condition = req.body.accountId ? {_id: req.body.accountId} : {lineId:req.body.lineId};
+        var condition = req.body.accountId ? { _id: req.body.accountId } : { lineId: req.body.lineId };
         Account.findOne(condition, function (err, account) {
             if (err)
                 return res.json({ error: '帳號錯誤' });
@@ -128,7 +128,7 @@ router.put('/deposit', user.can('deposit'), function (req, res) {
 
 router.put('/buy', user.can('buy'), function (req, res) {
     async.waterfall([function (next) {
-        var condition = req.body.accountId ? {_id: req.body.accountId} : {lineId:req.body.lineId};
+        var condition = req.body.accountId ? { _id: req.body.accountId } : { lineId: req.body.lineId };
         Account.findOne(condition, function (err, account) {
             if (err)
                 return res.json({ error: '帳戶錯誤' });
@@ -185,15 +185,14 @@ router.delete('/:accountId', user.can('closeAccount'), function (req, res) {
                 next(null, account.user);
         });
     }, function (userId) {
-        axios({
-            method: 'delete',
-            url: `https://ilab.csie.io/apps09/istore/user/account/${userId}/${storeId}`,
-            headers: { Authorization: istoreJwt }
-        }).then(function () {
-            res.header('Authorization', istoreJwt);
-            res.json({});
-        }).catch(function () {
-            return res.json({ error: '關閉帳號錯誤' });
+        User.findByIdAndUpdate(userId, { $pull: { account: { storeId: req.params.storeId } } }, { new: true }, function (err, user) {
+            if (err || user === null)
+                return res.json({ error: '關閉帳號錯誤' });
+            else {
+                var roleToken = jwt.sign({ role: 'member' }, storeSecret, { expiresIn: '30m' });
+                res.header('Authorization', `Bearer ${roleToken}`);
+                return res.json({});
+            }
         });
     }]);
 });
@@ -234,15 +233,43 @@ router.get('/message/:accountId', user.can('messages'), function (req, res) {
 
 router.post('/message', user.can('sendMessage'), function (req, res) {
     async.waterfall([function (next) {
-        axios({
-            method: 'post',
-            url: ` https://ilab.csie.io/apps09/istore/pushmessage`,
-            headers: { Authorization: istoreJwt },
-            data: { title: req.body.title, content: req.body.content, storeId: storeId, accountIds: req.body.accountIds || null, storeTopic: storeTopic }
-        }).then(function () {
-            next();
-        }).catch(function () {
-            return res.json({ error: '訊息發送錯誤' });
+        if (req.body.accountIds) {
+            var deviceTokens = [];
+            User.find({ 'accounts': { $elemMatch: { storeId: storeId, accountId: { $in: req.body.accountIds } } } }, function (err, users) {
+                users.filter(function (user) {
+                    if (user.deviceToken !== undefined)
+                        deviceTokens.push(user.deviceToken);
+                });
+                next(null, deviceTokens);
+            });
+        } else
+            next(null, null);
+    }, function (deviceTokens, next) {
+        var fcmMessage = {
+            notification: {
+                title: req.body.title,
+                body: req.body.content,
+                sound: "default",
+                click_action: "FCM_PLUGIN_ACTIVITY",
+                icon: "fcm_push_icon"
+            },
+            data: {
+                title: req.body.title,
+                body: req.body.content,
+            },
+            priority: "high"
+        };
+
+        if (req.body.accountIds)
+            fcmMessage['registration_ids'] = deviceTokens;
+        else
+            fcmMessage['to'] = storeTopic;
+
+        fcm.send(fcmMessage, function (err, response) {
+            if (err)
+                return res.json({ error: '訊息發送錯誤' });
+            else
+                next(null);
         });
     }, function (next) {
         Message.create({ title: req.body.title, content: req.body.content }, function (err, message) {

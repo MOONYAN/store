@@ -7,7 +7,7 @@ var user = new ConnectRoles({
 });
 
 user.use('loginAccount', function (req) {
-    if (req.user && (req.user.role === 'customer' || req.user.role === 'line')) {
+    if (req.user && (req.user.role === 'member' || req.user.role === 'line')) {
         return true;
     }
 });
