@@ -1,5 +1,5 @@
 var { storeId, storeSecret, storeTopic } = require('../config/storeConfig').store,
-    { istoreJwt } = require('../config/storeConfig').istore,
+    { fcmServerKey } = require('../config/storeConfig').istore,
     express = require('express'),
     router = express.Router(),
     async = require('async'),
