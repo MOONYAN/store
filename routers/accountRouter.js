@@ -69,7 +69,7 @@ router.post('/', user.can('openAccount'), function (req, res) {
             }
         });
     }, function (account) {
-        User.findByIdAndUpdate(req.body.userId, { $addToSet: { accounts: { storeId: req.body.storeId, accountId: account._id } } }, function (err, user) {
+        User.findByIdAndUpdate(req.body.userId, { $addToSet: { accounts: { storeId: storeId, accountId: account._id } } }, function (err, user) {
             if (err)
                 return res.json({ error: '帳號設定錯誤' });
             else {
