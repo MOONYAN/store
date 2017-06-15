@@ -1,7 +1,7 @@
 var storeId = '24';
 var domain = 'https://ostore.herokuapp.com';
 
-//var domain = 'http://192.168.1.101:3000';
+//var domain = 'http://127.0.0.1:3000';
 
 module.exports = {
     istore: {

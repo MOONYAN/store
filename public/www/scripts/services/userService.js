@@ -2,7 +2,7 @@ angular.module('2017Web').service('UserService', ['$rootScope', '$http', functio
     var self = this;
 
     self.register = function (user, onSuccess){
-        $http.post($rootScope.istoreUrl + '/user', user).
+        $http.post($rootScope.url + '/user', user).
             success(function (data, status, headers, config) {
                 (onSuccess || angular.noop)(data);
             }).error(function (data, status, headers, config) {
@@ -11,7 +11,7 @@ angular.module('2017Web').service('UserService', ['$rootScope', '$http', functio
     }
 
     self.login = function (user, onSuccess) {
-        $http.post($rootScope.istoreUrl + '/user/login', user).
+        $http.post($rootScope.url + '/user/login', user).
             success(function (data, status, headers, config) {
                 (onSuccess || angular.noop)(data);
             }).error(function (data, status, headers, config) {
