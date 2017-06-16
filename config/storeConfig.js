@@ -13,7 +13,7 @@ module.exports = {
     store: {
         storeId: storeId,
         storeName: `Store ${storeId}`,
-        storeDB: process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || `mongodb://Naruto:12345678@ds125262.mlab.com:25262/heroku_mqvq7nsb`,
+        storeDB: process.env.MONGODB_URI || `mongodb://Naruto:12345678@ds125262.mlab.com:25262/heroku_mqvq7nsb`,
         storeSecret: `store${storeId}`,
         storePath: `/apps${storeId}/store`,
         storeTopic: `/topics/store${storeId}`
