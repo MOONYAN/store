@@ -1,16 +1,19 @@
 var { storeId } = require('../config/storeConfig').store;
 var { lineJwt } = require('../config/storeConfig').line;
 var { lineIconUrl, lineUserUrl, lineDepositUrl, lineBuyUrl, lineProdutsUrl } = require('../config/storeConfig').url;
-var LineBot = require('node-line-messaging-api');
-var lineBot = require('../helpers/lineBot');
 
-var async = require('async'),
-    axios = require('axios');
+var lineBot = require('../helpers/lineBot').client;
+
+var axios = require('axios');
 
 var Account = require('../models/accountModel'),
     Transaction = require('../models/transactionModel');
 
-var Messages = LineBot.Messages;
+var Messages = require('../helpers/lineBot').Messages;
+
+module.exports = {
+
+};
 
 lineBot.on('follow', function (event) {
     var { replyToken } = event;

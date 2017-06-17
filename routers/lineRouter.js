@@ -9,10 +9,16 @@ var { storeSecret } = require('../config/storeConfig').store,
 var jwt = require('jsonwebtoken'),
     user = require('../helpers/accessControl');
 
-var LineBot = require('node-line-messaging-api');
-var lineBot = require('../helpers/lineBot');
+let lineBot = require('../helpers/lineBot').client;
+var Messages = require('../helpers/lineBot').Messages;
 
-var Messages = LineBot.Messages;
+var { middleware } = require('../helpers/lineBot');
+let handleEvent = require('../libs/lineRobot');
+router.post('/webhook', middleware, (req, res) => {
+    Promise
+        .all(req.body.events.map(handleEvent))
+        .then((result) => res.json(result));
+})
 
 router.post('/product', user.can('linePushProducts'), function (req, res) {
     async.waterfall([function (next) {
@@ -100,5 +106,7 @@ router.post('/location', user.can('linePushLocation'), function (req, res) {
             });
     }]);
 });
+
+
 
 module.exports = router;

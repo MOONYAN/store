@@ -6,6 +6,7 @@
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
+    "@line/bot-sdk": "^2.0.0",
     "async": "^2.1.5",
     "axios": "^0.16.1",
     "body-parser": "~1.15.2",

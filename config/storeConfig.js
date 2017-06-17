@@ -20,7 +20,6 @@ module.exports = {
     },
 
     line: {
-        botport:process.env.PORT || `31${storeId}`,
         channelSecret: '6cdcbb477e3d9f673b4135e44bcfc3c0',
         channelAccessToken: 'RVjSrE/1HODqVk/m6CH9lYJ35IMzLnZSDx7oB7q7hO0s4Zb3Xt2g+TEuObmXvbDMqzwtEeAVcrHTOFkUtY+eHqBtYgPEKC7TR7ZnUmjgFA6i/Zx37/iorOg3l6DBQWNdPCWztLTyW7/pNtvvZqD/bAdB04t89/1O/w1cDnyilFU=',
         lineJwt: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoibGluZSIsImlhdCI6MTQ5NTE4MDE3OSwiZXhwIjoxNTAwMzY0MTc5fQ.D8njA7lMUnZ_Nj5tOEoK3JkwZWFu-IihanJxiYU1Yp4'
