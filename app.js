@@ -1,4 +1,4 @@
-var { storeDB, storeSecret, storePath } = require('./config/storeConfig').store,
+var { storeId, storeDB, storeSecret, storePath } = require('./config/storeConfig').store,
     express = require('express'),
     logger = require('morgan'),
     bodyParser = require('body-parser'),
@@ -40,7 +40,7 @@ app.all('*', expressJwt({ secret: storeSecret })
         path: [
             { url: `${storePath}/user/login` },
             { url: `${storePath}/user`, methods: ['POST'] },
-            { url: `${storePath}/line/webhook`, methods: ['POST'] }]
+            { url: `/apps${storeId}/line/webhook`, methods: ['POST'] }]
     }), function (req, res, next) {
         next();
     });
